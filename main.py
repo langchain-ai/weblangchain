@@ -219,7 +219,7 @@ def create_retriever_chain(
             )
             | retriever
         ).with_config(run_name="RetrievalChainWithNoHistory"),
-    )
+    ).with_config(tags=["RetrievalChainResults"])
 
 
 def serialize_history(request: ChatRequest):

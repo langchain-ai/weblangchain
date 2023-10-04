@@ -101,7 +101,8 @@ export function ChatWindow(props: {
               conversation_id: conversationId,
             }
           },
-          include_names: ["GetRelevantDocumentChunks"],
+          // include_names: ["GetRelevantDocumentChunks"],
+          include_tags: ["RetrievalChainResults"]
         }),
         onerror(e) {
           throw e;
@@ -132,6 +133,7 @@ export function ChatWindow(props: {
               runId = op.value.id;
             }
           }
+          console.log("Malformed-ish documents", streamedResponse?.logs?.[0]);
           const parsedResult = marked.parse(accumulatedMessage);
 
           setMessages((prevMessages) => {
