@@ -8,6 +8,7 @@ import { ChatMessageBubble, Message } from "../components/ChatMessageBubble";
 import { marked } from "marked";
 import { Renderer } from "marked";
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { applyPatch } from 'fast-json-patch';
 import hljs from "highlight.js";
 import "highlight.js/styles/gradient-dark.css";
 
@@ -85,6 +86,7 @@ export function ChatWindow(props: {
     marked.setOptions({ renderer });
 
     try {
+      let streamedResponse: Record<string, any> = {}
       await fetchEventSource(apiBaseUrl + "/chat/stream_log", {
         method: "POST",
         headers: {
@@ -119,18 +121,19 @@ export function ChatWindow(props: {
             return;
           }
           const chunk = JSON.parse(msg.data);
-          for (const op of chunk.ops) {
-            if (op.path === "/logs/0/final_output" && Array.isArray(op.value?.documents)) {
-              sources = (op.value.documents ?? []).map((doc: {page_content: string, metadata: Record<string, unknown>}) => ({
-                url: doc.metadata.source,
-                title: doc.metadata.title,
-                images: doc.metadata.images,
-              }));
-            } else if (op.path === "/streamed_output/-") {
-              accumulatedMessage = accumulatedMessage + op.value;
-            } else if (!op.path && op.op === "replace") {
-              runId = op.value.id;
-            }
+          streamedResponse = applyPatch(streamedResponse, chunk.ops).newDocument;
+          if (Array.isArray(streamedResponse?.logs?.[0]?.final_output?.documents)) {
+            sources = streamedResponse.logs[0].final_output.documents.map((doc: Record<string, any>) => ({
+              url: doc.metadata.source,
+              title: doc.metadata.title,
+              images: doc.metadata.images,
+            }));
+          }
+          if (streamedResponse.id !== undefined) {
+            runId = streamedResponse.id;
+          }
+          if (Array.isArray(streamedResponse?.streamed_output)) {
+            accumulatedMessage = streamedResponse.streamed_output.join("");
           }
           const parsedResult = marked.parse(accumulatedMessage);
 
