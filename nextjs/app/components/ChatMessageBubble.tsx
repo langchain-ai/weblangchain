@@ -72,7 +72,7 @@ const createAnswerElements = (
   matches.forEach((match) => {
     const sourceNum = parseInt(match[1], 10);
     const resolvedNum = sourceIndexMap.get(sourceNum) ?? 10;
-    if (prevCitationEndIndex !== match.index) {
+    if ((prevCitationEndIndex + 1) !== match.index) {
       adjacentCitations = [];
     }
     if (match.index !== null && resolvedNum < filteredSources.length) {
