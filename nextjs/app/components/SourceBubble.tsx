@@ -55,7 +55,8 @@ export function SourceBubble(props: {
     <a href={props.source.url}
         target="_blank"
         onMouseEnter={props.onMouseEnter}
-        onMouseLeave={props.onMouseLeave}>
+        onMouseLeave={props.onMouseLeave}
+        className="hover:no-underline">
       <div className={`${props.highlighted ? "bg-stone-500" : "bg-stone-700"} rounded p-4 text-white h-full text-xs flex flex-col mb-4`}>
         <div className="line-clamp-4">{props.source.title}</div>
         <div className="text-white mt-auto">
