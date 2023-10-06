@@ -265,6 +265,14 @@ export function ChatWindow(props: {
           </div>
         </div>
       </div>) : ""}
+
+      {messages.length === 0 ? (
+        <footer className="flex justify-center absolute bottom-8">
+          <a href="https://github.com/langchain-ai/weblangchain" target="_blank" className="text-white flex items-center">
+            <img src="/images/github-mark.svg" className="h-4 mr-1" /><span>View Source</span>
+          </a>
+        </footer>
+      ) : ""}
     </div>
   );
 }
