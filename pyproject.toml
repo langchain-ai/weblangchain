@@ -10,11 +10,11 @@ python = "^3.10"
 openai = "^0.28.0"
 fastapi = "^0.103.1"
 pydantic = "1.10"
-langchain = "^0.0.306"
+langchain = "^0.0.309"
 uvicorn = "^0.23.2"
 tiktoken = "^0.4.0"
 tavily-python = "^0.1.9"
-langserve = "^0.0.3"
+langserve = "0.0.6"
 sse-starlette = "^1.6.5"
 
 
