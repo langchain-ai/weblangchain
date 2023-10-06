@@ -8,6 +8,7 @@ import { ChatMessageBubble, Message } from "../components/ChatMessageBubble";
 import { marked } from "marked";
 import { Renderer } from "marked";
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { applyPatch } from 'fast-json-patch';
 import hljs from "highlight.js";
 import "highlight.js/styles/gradient-dark.css";
 
@@ -85,6 +86,8 @@ export function ChatWindow(props: {
     marked.setOptions({ renderer });
 
     try {
+      const sourceStepName = "FinalSourceRetriever";
+      let streamedResponse: Record<string, any> = {}
       await fetchEventSource(apiBaseUrl + "/chat/stream_log", {
         method: "POST",
         headers: {
@@ -101,7 +104,7 @@ export function ChatWindow(props: {
               conversation_id: conversationId,
             }
           },
-          include_names: ["GetRelevantDocumentChunks"],
+          include_names: [sourceStepName],
         }),
         onerror(e) {
           throw e;
@@ -115,43 +118,43 @@ export function ChatWindow(props: {
             setIsLoading(false);
             return;
           }
-          if (!msg.data) {
-            return;
-          }
-          const chunk = JSON.parse(msg.data);
-          for (const op of chunk.ops) {
-            if (op.path === "/logs/0/final_output" && Array.isArray(op.value?.documents)) {
-              sources = (op.value.documents ?? []).map((doc: {page_content: string, metadata: Record<string, unknown>}) => ({
+          if (msg.event === "data" && msg.data) {
+            const chunk = JSON.parse(msg.data);
+            streamedResponse = applyPatch(streamedResponse, chunk.ops).newDocument;
+            if (Array.isArray(streamedResponse?.logs?.[sourceStepName]?.final_output?.documents)) {
+              sources = streamedResponse.logs[sourceStepName].final_output.documents.map((doc: Record<string, any>) => ({
                 url: doc.metadata.source,
                 title: doc.metadata.title,
                 images: doc.metadata.images,
               }));
-            } else if (op.path === "/streamed_output/-") {
-              accumulatedMessage = accumulatedMessage + op.value;
-            } else if (!op.path && op.op === "replace") {
-              runId = op.value.id;
             }
-          }
-          const parsedResult = marked.parse(accumulatedMessage);
+            if (streamedResponse.id !== undefined) {
+              runId = streamedResponse.id;
+            }
+            if (Array.isArray(streamedResponse?.streamed_output)) {
+              accumulatedMessage = streamedResponse.streamed_output.join("");
+            }
+            const parsedResult = marked.parse(accumulatedMessage);
 
-          setMessages((prevMessages) => {
-            let newMessages = [...prevMessages];
-            if (messageIndex === null) {
-              messageIndex = newMessages.length;
-              newMessages.push({
-                id: Math.random().toString(),
-                content: parsedResult.trim(),
-                runId: runId,
-                sources: sources,
-                role: "assistant",
-              });
-            } else {
-              newMessages[messageIndex].content = parsedResult.trim();
-              newMessages[messageIndex].runId = runId;
-              newMessages[messageIndex].sources = sources;
-            }
-            return newMessages;
-          });
+            setMessages((prevMessages) => {
+              let newMessages = [...prevMessages];
+              if (messageIndex === null) {
+                messageIndex = newMessages.length;
+                newMessages.push({
+                  id: Math.random().toString(),
+                  content: parsedResult.trim(),
+                  runId: runId,
+                  sources: sources,
+                  role: "assistant",
+                });
+              } else {
+                newMessages[messageIndex].content = parsedResult.trim();
+                newMessages[messageIndex].runId = runId;
+                newMessages[messageIndex].sources = sources;
+              }
+              return newMessages;
+            });
+          }
         }
       });
     } catch (e) {
