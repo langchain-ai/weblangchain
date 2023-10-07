@@ -7,8 +7,8 @@ import { EmptyState } from "../components/EmptyState";
 import { ChatMessageBubble, Message } from "../components/ChatMessageBubble";
 import { marked } from "marked";
 import { Renderer } from "marked";
-import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { applyPatch } from 'fast-json-patch';
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { applyPatch } from "fast-json-patch";
 import hljs from "highlight.js";
 import "highlight.js/styles/gradient-dark.css";
 
@@ -79,7 +79,7 @@ export function ChatWindow(props: {
         : "plaintext";
       const highlightedCode = hljs.highlight(
         validLanguage || "plaintext",
-        code
+        code,
       ).value;
       return `<pre class="highlight bg-gray-700" style="padding: 5px; border-radius: 5px; overflow: auto; overflow-wrap: anywhere; white-space: pre-wrap; max-width: 100%; display: block; line-height: 1.2"><code class="${language}" style="color: #d6e2ef; font-size: 12px; ">${highlightedCode}</code></pre>`;
     };
@@ -87,12 +87,12 @@ export function ChatWindow(props: {
 
     try {
       const sourceStepName = "FinalSourceRetriever";
-      let streamedResponse: Record<string, any> = {}
+      let streamedResponse: Record<string, any> = {};
       await fetchEventSource(apiBaseUrl + "/chat/stream_log", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "text/event-stream",
+          Accept: "text/event-stream",
         },
         body: JSON.stringify({
           input: {
@@ -102,7 +102,7 @@ export function ChatWindow(props: {
           config: {
             metadata: {
               conversation_id: conversationId,
-            }
+            },
           },
           include_names: [sourceStepName],
         }),
@@ -120,9 +120,19 @@ export function ChatWindow(props: {
           }
           if (msg.event === "data" && msg.data) {
             const chunk = JSON.parse(msg.data);
-            streamedResponse = applyPatch(streamedResponse, chunk.ops).newDocument;
-            if (Array.isArray(streamedResponse?.logs?.[sourceStepName]?.final_output?.documents)) {
-              sources = streamedResponse.logs[sourceStepName].final_output.documents.map((doc: Record<string, any>) => ({
+            streamedResponse = applyPatch(
+              streamedResponse,
+              chunk.ops,
+            ).newDocument;
+            if (
+              Array.isArray(
+                streamedResponse?.logs?.[sourceStepName]?.final_output
+                  ?.documents,
+              )
+            ) {
+              sources = streamedResponse.logs[
+                sourceStepName
+              ].final_output.documents.map((doc: Record<string, any>) => ({
                 url: doc.metadata.source,
                 title: doc.metadata.title,
                 images: doc.metadata.images,
@@ -155,7 +165,7 @@ export function ChatWindow(props: {
               return newMessages;
             });
           }
-        }
+        },
       });
     } catch (e) {
       setMessages((prevMessages) => prevMessages.slice(0, -1));
@@ -170,16 +180,30 @@ export function ChatWindow(props: {
   };
 
   return (
-    <div className={"flex flex-col items-center p-8 rounded grow max-h-full h-full" + (messages.length === 0 ? " justify-center mb-32" : "")}>
+    <div
+      className={
+        "flex flex-col items-center p-8 rounded grow max-h-full h-full" +
+        (messages.length === 0 ? " justify-center mb-32" : "")
+      }
+    >
       {messages.length > 0 && (
         <Flex direction={"column"} alignItems={"center"} paddingBottom={"20px"}>
           <Heading fontSize="2xl" fontWeight={"medium"} mb={1} color={"white"}>
             {titleText}
           </Heading>
           <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
-            Powered by <a target="_blank" href="https://tavily.com" className="text-sky-400">Tavily</a>
+            Powered by{" "}
+            <a
+              target="_blank"
+              href="https://tavily.com"
+              className="text-sky-400"
+            >
+              Tavily
+            </a>
           </Heading>
-          <Heading fontSize="lg" fontWeight={"normal"} mb={1} color={"white"}>We appreciate feedback!</Heading>
+          <Heading fontSize="lg" fontWeight={"normal"} mb={1} color={"white"}>
+            We appreciate feedback!
+          </Heading>
         </Flex>
       )}
       <div
@@ -238,41 +262,87 @@ export function ChatWindow(props: {
           />
         </InputRightElement>
       </InputGroup>
-      {messages.length === 0 ? (<div className="w-full text-center flex flex-col">
-        <div className="flex grow justify-center w-full mt-4">
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            what is langchain?
+      {messages.length === 0 ? (
+        <div className="w-full text-center flex flex-col">
+          <div className="flex grow justify-center w-full mt-4">
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              what is langchain?
+            </div>
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              history of mesopotamia
+            </div>
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              how to build a discord bot
+            </div>
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              leonardo dicaprio girlfriend
+            </div>
           </div>
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            history of mesopotamia
-          </div>
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            how to build a discord bot
-          </div>
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            leonardo dicaprio girlfriend
+          <div className="flex grow justify-center w-full mt-4">
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              fun gift ideas for software engineers
+            </div>
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              how does a prism separate light
+            </div>
+            <div
+              onMouseUp={(e) =>
+                sendInitialQuestion((e.target as HTMLDivElement).innerText)
+              }
+              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
+            >
+              what bear is best
+            </div>
           </div>
         </div>
-        <div className="flex grow justify-center w-full mt-4">
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            fun gift ideas for software engineers
-          </div>
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            how does a prism separate light
-          </div>
-          <div onMouseUp={(e) => sendInitialQuestion((e.target as HTMLDivElement).innerText)}  className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500">
-            what bear is best
-          </div>
-        </div>
-      </div>) : ""}
+      ) : (
+        ""
+      )}
 
       {messages.length === 0 ? (
         <footer className="flex justify-center absolute bottom-8">
-          <a href="https://github.com/langchain-ai/weblangchain" target="_blank" className="text-white flex items-center">
-            <img src="/images/github-mark.svg" className="h-4 mr-1" /><span>View Source</span>
+          <a
+            href="https://github.com/langchain-ai/weblangchain"
+            target="_blank"
+            className="text-white flex items-center"
+          >
+            <img src="/images/github-mark.svg" className="h-4 mr-1" />
+            <span>View Source</span>
           </a>
         </footer>
-      ) : ""}
+      ) : (
+        ""
+      )}
     </div>
   );
 }

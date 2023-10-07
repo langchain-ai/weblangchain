@@ -7,11 +7,15 @@ export function InlineCitation(props: {
   onMouseEnter: () => any;
   onMouseLeave: () => any;
 }) {
-  const { source, sourceNumber, highlighted, onMouseEnter, onMouseLeave } = props;
+  const { source, sourceNumber, highlighted, onMouseEnter, onMouseLeave } =
+    props;
   return (
-    <a href={source.url}
+    <a
+      href={source.url}
       target="_blank"
-      className={`relative bottom-1.5 text-xs border rounded px-1 ${highlighted ? "bg-stone-500" : "bg-stone-700"}`}
+      className={`relative bottom-1.5 text-xs border rounded px-1 ${
+        highlighted ? "bg-stone-500" : "bg-stone-700"
+      }`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

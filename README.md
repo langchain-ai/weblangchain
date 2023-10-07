@@ -10,7 +10,7 @@ By default, WebLangChain uses [Tavily](https://tavily.com) to fetch content from
 If you'd like to swap in a different base retriever (e.g. if you want to use your own data source), you can modify the `get_base_retriever()` method in `main.py`.
 
 1. Install backend dependencies: `poetry install`.
-1. Make sure to set your environment variables to configure the application:
+2. Make sure to set your environment variables to configure the application:
 ```
 export OPENAI_API_KEY=
 export TAVILY_API_KEY=
@@ -21,10 +21,17 @@ export LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 export LANGCHAIN_API_KEY=
 export LANGCHAIN_PROJECT=
 ```
-1. Start the Python backend with `poetry run make start`.
+3. Start the Python backend with `poetry run make start`.
+4. Install frontend dependencies by running `cd nextjs`, then `yarn`.
+5. Run the frontend with `yarn dev` for frontend.
+6. Open [localhost:3000](http://localhost:3000) in your browser.
+
+## ☕ Running locally (JS backend)
+
 1. Install frontend dependencies by running `cd nextjs`, then `yarn`.
-1. Run the frontend with `yarn dev` for frontend.
-1. Open [localhost:3000](http://localhost:3000) in your browser.
+2. Populate a `nextjs/.env.local` file with your own versions of keys from the `nextjs/.env.example` file, and set `NEXT_PUBLIC_API_BASE_URL` to `"http://localhost:3000/api"`.
+3. Run the app with `yarn dev`.
+4. Open [localhost:3000](http://localhost:3000) in your browser.
 
 ## ⚙️ How it works
 

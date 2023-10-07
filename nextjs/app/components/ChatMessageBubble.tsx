@@ -63,7 +63,7 @@ const createAnswerElements = (
   highlighedSourceLinkStates: boolean[],
   setHighlightedSourceLinkStates: React.Dispatch<
     React.SetStateAction<boolean[]>
-  >
+  >,
 ) => {
   const matches = Array.from(content.matchAll(/\[\^?(\d+)\^?\]/g));
   const elements: JSX.Element[] = [];
@@ -72,7 +72,7 @@ const createAnswerElements = (
   matches.forEach((match) => {
     const sourceNum = parseInt(match[1], 10);
     const resolvedNum = sourceIndexMap.get(sourceNum) ?? 10;
-    if ((prevCitationEndIndex + 1) !== match.index) {
+    if (prevCitationEndIndex + 1 !== match.index) {
       adjacentCitations = [];
     }
     if (match.index !== null && resolvedNum < filteredSources.length) {
@@ -83,7 +83,7 @@ const createAnswerElements = (
             dangerouslySetInnerHTML={{
               __html: content.slice(prevCitationEndIndex, match.index),
             }}
-          ></span>
+          ></span>,
         );
         elements.push(
           <span key={`span:${prevCitationEndIndex}`}>
@@ -94,14 +94,14 @@ const createAnswerElements = (
               highlighted={highlighedSourceLinkStates[resolvedNum]}
               onMouseEnter={() =>
                 setHighlightedSourceLinkStates(
-                  filteredSources.map((_, i) => i === resolvedNum)
+                  filteredSources.map((_, i) => i === resolvedNum),
                 )
               }
               onMouseLeave={() =>
                 setHighlightedSourceLinkStates(filteredSources.map(() => false))
               }
             />
-          </span>
+          </span>,
         );
         adjacentCitations.push(resolvedNum);
       }
@@ -112,7 +112,7 @@ const createAnswerElements = (
     <span
       key={`content:${prevCitationEndIndex}`}
       dangerouslySetInnerHTML={{ __html: content.slice(prevCitationEndIndex) }}
-    ></span>
+    ></span>,
   );
   return elements;
 };
@@ -227,7 +227,7 @@ export function ChatMessageBubble(props: {
   // Use an array of highlighted states as a state since React
   // complains when creating states in a loop
   const [highlighedSourceLinkStates, setHighlightedSourceLinkStates] = useState(
-    filteredSources.map(() => false)
+    filteredSources.map(() => false),
   );
   const answerElements =
     role === "assistant"
@@ -236,12 +236,18 @@ export function ChatMessageBubble(props: {
           filteredSources,
           sourceIndexMap,
           highlighedSourceLinkStates,
-          setHighlightedSourceLinkStates
+          setHighlightedSourceLinkStates,
         )
       : [];
 
   const imageUrls = filteredSources[0]?.images ?? [];
-  const imageElements = imageUrls.map((imageUrl) => <img key={`image:${imageUrl}`} src={imageUrl} className="block h-full mr-2"></img>)
+  const imageElements = imageUrls.map((imageUrl) => (
+    <img
+      key={`image:${imageUrl}`}
+      src={imageUrl}
+      className="block h-full mr-2"
+    ></img>
+  ));
 
   const animateButton = (buttonId: string) => {
     let button: HTMLButtonElement | null;
@@ -288,7 +294,8 @@ export function ChatMessageBubble(props: {
                 paddingBottom={"12px"}
                 className="flex items-center"
               >
-                <SearchIcon className="mr-1"/>Sources
+                <SearchIcon className="mr-1" />
+                Sources
               </Heading>
               <HStack spacing={"10px"} maxWidth={"100%"} overflow={"auto"}>
                 {filteredSources.map((source, index) => (
@@ -299,12 +306,12 @@ export function ChatMessageBubble(props: {
                       index={index}
                       onMouseEnter={() =>
                         setHighlightedSourceLinkStates(
-                          filteredSources.map((_, i) => i === index)
+                          filteredSources.map((_, i) => i === index),
                         )
                       }
                       onMouseLeave={() =>
                         setHighlightedSourceLinkStates(
-                          filteredSources.map(() => false)
+                          filteredSources.map(() => false),
                         )
                       }
                     />
@@ -314,7 +321,12 @@ export function ChatMessageBubble(props: {
             </VStack>
           </Flex>
 
-          <Heading size="lg" fontWeight="medium" color="blue.100" className="flex items-center">
+          <Heading
+            size="lg"
+            fontWeight="medium"
+            color="blue.100"
+            className="flex items-center"
+          >
             <InfoOutlineIcon className="mr-1" /> Answer
           </Heading>
         </>
@@ -329,11 +341,13 @@ export function ChatMessageBubble(props: {
           <Box className="whitespace-pre-wrap" color="white">
             {answerElements}
           </Box>
-          {(imageUrls.length && props.messageCompleted) ? (
+          {imageUrls.length && props.messageCompleted ? (
             <Flex className="w-full max-w-full flex h-[196px] overflow-auto">
               {imageElements}
             </Flex>
-          ) : ""}
+          ) : (
+            ""
+          )}
         </>
       )}
 

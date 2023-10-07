@@ -1,4 +1,4 @@
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import { emojisplosion } from "emojisplosion";
 
 export type Source = {
@@ -14,18 +14,19 @@ export function SourceBubble(props: {
   onMouseEnter: () => any;
   onMouseLeave: () => any;
 }) {
-  const cumulativeOffset = function(element: HTMLElement | null) {
-      var top = 0, left = 0;
-      do {
-          top += element?.offsetTop  || 0;
-          left += element?.offsetLeft || 0;
-          element = (element?.offsetParent as HTMLElement) || null;
-      } while(element);
+  const cumulativeOffset = function (element: HTMLElement | null) {
+    var top = 0,
+      left = 0;
+    do {
+      top += element?.offsetTop || 0;
+      left += element?.offsetLeft || 0;
+      element = (element?.offsetParent as HTMLElement) || null;
+    } while (element);
 
-      return {
-          top: top,
-          left: left
-      };
+    return {
+      top: top,
+      left: left,
+    };
   };
 
   const animateButton = (buttonId: string) => {
@@ -49,15 +50,21 @@ export function SourceBubble(props: {
       emojis: buttonId === "upButton" ? ["👍"] : ["👎"],
     });
   };
-  const hostname = (new URL(props.source.url)).hostname.replace("www.", "");
+  const hostname = new URL(props.source.url).hostname.replace("www.", "");
 
   return (
-    <a href={props.source.url}
-        target="_blank"
-        onMouseEnter={props.onMouseEnter}
-        onMouseLeave={props.onMouseLeave}
-        className="hover:no-underline">
-      <div className={`${props.highlighted ? "bg-stone-500" : "bg-stone-700"} rounded p-4 text-white h-full text-xs flex flex-col mb-4`}>
+    <a
+      href={props.source.url}
+      target="_blank"
+      onMouseEnter={props.onMouseEnter}
+      onMouseLeave={props.onMouseLeave}
+      className="hover:no-underline"
+    >
+      <div
+        className={`${
+          props.highlighted ? "bg-stone-500" : "bg-stone-700"
+        } rounded p-4 text-white h-full text-xs flex flex-col mb-4`}
+      >
         <div className="line-clamp-4">{props.source.title}</div>
         <div className="text-white mt-auto">
           {hostname} [{props.index}]
