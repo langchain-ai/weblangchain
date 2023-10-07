@@ -8,12 +8,17 @@ This repo is an example of performing retrieval using the entire internet as a d
 
 By default, WebLangChain uses [Tavily](https://tavily.com) to fetch content from webpages. You can get an API key from [by signing up](https://tavily.com/).
 If you'd like to swap in a different base retriever (e.g. if you want to use your own data source), you can modify the `get_base_retriever()` method in `main.py`.
+The code includes a simple backup that uses the Google Custom Search Engine for reference.
 
 1. Install backend dependencies: `poetry install`.
 2. Make sure to set your environment variables to configure the application:
 ```
 export OPENAI_API_KEY=
 export TAVILY_API_KEY=
+
+# if you'd like to use the backup retriever
+export GOOGLE_CSE_ID=
+export GOOGLE_API_KEY=
 
 # for tracing
 export LANGCHAIN_TRACING_V2=true
