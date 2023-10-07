@@ -12,6 +12,7 @@ import { applyPatch } from "fast-json-patch";
 import hljs from "highlight.js";
 import "highlight.js/styles/gradient-dark.css";
 
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Heading,
@@ -167,11 +168,11 @@ export function ChatWindow(props: {
           }
         },
       });
-    } catch (e) {
+    } catch (e: any) {
       setMessages((prevMessages) => prevMessages.slice(0, -1));
       setIsLoading(false);
       setInput(messageValue);
-      throw e;
+      toast.error(e.message);
     }
   };
 
@@ -191,7 +192,7 @@ export function ChatWindow(props: {
           <Heading fontSize="2xl" fontWeight={"medium"} mb={1} color={"white"}>
             {titleText}
           </Heading>
-          <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
+          {/* <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
             Powered by{" "}
             <a
               target="_blank"
@@ -200,7 +201,7 @@ export function ChatWindow(props: {
             >
               Tavily
             </a>
-          </Heading>
+          </Heading> */}
           <Heading fontSize="lg" fontWeight={"normal"} mb={1} color={"white"}>
             We appreciate feedback!
           </Heading>
