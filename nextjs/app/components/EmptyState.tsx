@@ -6,12 +6,12 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
       <Heading fontSize="3xl" fontWeight={"medium"} mb={1} color={"white"}>
         WebLangChain 🦜🔗
       </Heading>
-      <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
+      {/* <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
         Powered by{" "}
         <a target="_blank" href="https://tavily.com" className="text-sky-400">
           Tavily
         </a>
-      </Heading>
+      </Heading> */}
       <Heading
         fontSize="xl"
         fontWeight={"normal"}

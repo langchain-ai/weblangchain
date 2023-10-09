@@ -192,7 +192,7 @@ export function ChatWindow(props: {
           <Heading fontSize="2xl" fontWeight={"medium"} mb={1} color={"white"}>
             {titleText}
           </Heading>
-          <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
+          {/* <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
             Powered by{" "}
             <a
               target="_blank"
@@ -201,7 +201,7 @@ export function ChatWindow(props: {
             >
               Tavily
             </a>
-          </Heading>
+          </Heading> */}
           <Heading fontSize="lg" fontWeight={"normal"} mb={1} color={"white"}>
             We appreciate feedback!
           </Heading>
