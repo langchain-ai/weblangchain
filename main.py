@@ -152,7 +152,7 @@ class BackupRetriever(BaseRetriever):
 
 
 def get_base_retriever():
-    if (os.environ.get("USE_BACKUP", False)):
+    if (os.environ.get("USE_BACKUP", "false") == "true"):
         return BackupRetriever()
     return TavilySearchAPIRetriever(k=6, include_raw_content=True, include_images=True)
 
