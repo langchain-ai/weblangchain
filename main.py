@@ -1,4 +1,5 @@
 """Main entrypoint for the app."""
+import os
 import asyncio
 from operator import itemgetter
 from typing import Dict, List, Optional, Sequence
@@ -151,8 +152,9 @@ class BackupRetriever(BaseRetriever):
 
 
 def get_base_retriever():
-    # return TavilySearchAPIRetriever(k=6, include_raw_content=True, include_images=True)
-    return BackupRetriever()
+    if (os.environ.get("USE_BACKUP", False)):
+        return BackupRetriever()
+    return TavilySearchAPIRetriever(k=6, include_raw_content=True, include_images=True)
 
 
 def _get_retriever():
