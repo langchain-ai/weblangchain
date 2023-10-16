@@ -8,14 +8,16 @@ import langsmith
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, ChatAnthropic
 from langchain.document_loaders import AsyncHtmlLoader
 from langchain.document_transformers import Html2TextTransformer
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import (ChatPromptTemplate, MessagesPlaceholder,
                                PromptTemplate)
+from langchain.schema.runnable import ConfigurableField
 from langchain.retrievers import (ContextualCompressionRetriever,
                                   TavilySearchAPIRetriever)
+from langchain.retrievers.you import YouRetriever
 from langchain.retrievers.document_compressors import (
     DocumentCompressorPipeline, EmbeddingsFilter)
 from langchain.schema import Document
@@ -165,8 +167,16 @@ def _get_retriever():
         transformers=[splitter, relevance_filter]
     )
     base_retriever = get_base_retriever()
+    # Limit to first 10 results
+    you_retriever = YouRetriever() | (lambda x: x[:10])
     return ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_retriever
+    ).configurable_alternatives(
+        # This gives this field an id
+        # When configuring the end runnable, we can then use this id to configure this field
+        ConfigurableField(id="retriever"),
+        default_key="google",
+        you=you_retriever,
     ).with_config(run_name="FinalSourceRetriever")
 
 
@@ -263,6 +273,12 @@ llm = ChatOpenAI(
     # model="gpt-4",
     streaming=True,
     temperature=0,
+).configurable_alternatives(
+    # This gives this field an id
+    # When configuring the end runnable, we can then use this id to configure this field
+    ConfigurableField(id="llm"),
+    default_key="openai",
+    anthropic=ChatAnthropic(model="claude-2"),
 )
 
 retriever = _get_retriever()
