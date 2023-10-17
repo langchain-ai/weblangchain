@@ -3,8 +3,7 @@
 import React, { useRef, useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { EmptyState } from "../components/EmptyState";
-import { ChatMessageBubble, Message } from "../components/ChatMessageBubble";
+import { ChatMessageBubble, Message } from "./ChatMessageBubble";
 import { marked } from "marked";
 import { Renderer } from "marked";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
@@ -16,12 +15,12 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Heading,
-  Flex,
   IconButton,
   Input,
   InputGroup,
   InputRightElement,
   Spinner,
+  Select,
 } from "@chakra-ui/react";
 import { ArrowUpIcon } from "@chakra-ui/icons";
 import { Source } from "./SourceBubble";
@@ -36,6 +35,8 @@ export function ChatWindow(props: {
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [retriever, setRetriever] = useState("tavily");
+  const [llm, setLlm] = useState("openai");
 
   const [chatHistory, setChatHistory] = useState<
     { human: string; ai: string }[]
@@ -101,6 +102,10 @@ export function ChatWindow(props: {
             chat_history: chatHistory,
           },
           config: {
+            configurable: {
+              retriever,
+              llm,
+            },
             metadata: {
               conversation_id: conversationId,
             },
@@ -187,46 +192,58 @@ export function ChatWindow(props: {
         (messages.length === 0 ? " justify-center mb-32" : "")
       }
     >
-      {messages.length > 0 && (
-        <Flex direction={"column"} alignItems={"center"} paddingBottom={"20px"}>
-          <Heading fontSize="2xl" fontWeight={"medium"} mb={1} color={"white"}>
-            {titleText}
-          </Heading>
-          {/* <Heading fontSize="md" fontWeight={"normal"} mb={1} color={"white"}>
-            Powered by{" "}
-            <a
-              target="_blank"
-              href="https://tavily.com"
-              className="text-sky-400"
-            >
-              Tavily
-            </a>
-          </Heading> */}
-          <Heading fontSize="lg" fontWeight={"normal"} mb={1} color={"white"}>
-            We appreciate feedback!
-          </Heading>
-        </Flex>
-      )}
+      <div className="flex flex-col items-center pb-8">
+        <Heading
+          fontSize={messages.length > 0 ? "2xl" : "4xl"}
+          fontWeight={"medium"}
+          mb={1}
+          color={"white"}
+        >
+          {titleText}
+        </Heading>
+        <Heading
+          fontSize={messages.length === 0 ? "xl" : "lg"}
+          fontWeight={"normal"}
+          mb={1}
+          color={"white"}
+          marginTop={messages.length === 0 ? "12px" : ""}
+        >
+          {messages.length > 0
+            ? "We appreciate feedback!"
+            : "Ask me anything about anything!"}
+        </Heading>
+        <div className="text-white flex items-center mt-4">
+          <span className="shrink-0 mr-2">Powered by</span>
+          <Select onChange={(e) => setRetriever(e.target.value)}>
+            <option value="tavily">Tavily</option>
+            {/* <option value="you">You.com</option> */}
+            <option value="google">Google</option>
+          </Select>
+          <span className="shrink-0 ml-2 mr-2">and</span>
+          <Select onChange={(e) => setLlm(e.target.value)} minWidth={"186px"}>
+            <option value="openai">GPT-3.5-Turbo</option>
+            <option value="anthropic">Claude-2</option>
+          </Select>
+        </div>
+      </div>
       <div
         className="flex flex-col-reverse w-full mb-2 overflow-auto"
         ref={messageContainerRef}
       >
-        {messages.length > 0 ? (
-          [...messages]
-            .reverse()
-            .map((m, index) => (
-              <ChatMessageBubble
-                key={m.id}
-                message={{ ...m }}
-                aiEmoji="🦜"
-                apiBaseUrl={apiBaseUrl}
-                isMostRecent={index === 0}
-                messageCompleted={!isLoading}
-              ></ChatMessageBubble>
-            ))
-        ) : (
-          <EmptyState onChoice={sendInitialQuestion} />
-        )}
+        {messages.length > 0
+          ? [...messages]
+              .reverse()
+              .map((m, index) => (
+                <ChatMessageBubble
+                  key={m.id}
+                  message={{ ...m }}
+                  aiEmoji="🦜"
+                  apiBaseUrl={apiBaseUrl}
+                  isMostRecent={index === 0}
+                  messageCompleted={!isLoading}
+                ></ChatMessageBubble>
+              ))
+          : ""}
       </div>
       <InputGroup size="md" alignItems={"center"}>
         <Input

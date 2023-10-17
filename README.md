@@ -33,6 +33,8 @@ export LANGCHAIN_PROJECT=
 
 ## ☕ Running locally (JS backend)
 
+Note that customization of the retriever and model via LangServe is currently not supported for the JS backend.
+
 1. Install frontend dependencies by running `cd nextjs`, then `yarn`.
 2. Populate a `nextjs/.env.local` file with your own versions of keys from the `nextjs/.env.example` file, and set `NEXT_PUBLIC_API_BASE_URL` to `"http://localhost:3000/api"`.
 3. Run the app with `yarn dev`.
