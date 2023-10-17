@@ -29,27 +29,6 @@ export function SourceBubble(props: {
     };
   };
 
-  const animateButton = (buttonId: string) => {
-    const button = document.getElementById(buttonId);
-    button!.classList.add("animate-ping");
-    setTimeout(() => {
-      button!.classList.remove("animate-ping");
-    }, 500);
-
-    emojisplosion({
-      emojiCount: 10,
-      uniqueness: 1,
-      position() {
-        const offset = cumulativeOffset(button);
-
-        return {
-          x: offset.left + button!.clientWidth / 2,
-          y: offset.top + button!.clientHeight / 2,
-        };
-      },
-      emojis: buttonId === "upButton" ? ["👍"] : ["👎"],
-    });
-  };
   const hostname = new URL(props.source.url).hostname.replace("www.", "");
 
   return (

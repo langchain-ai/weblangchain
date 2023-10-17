@@ -105,7 +105,7 @@ const createAnswerElements = (
         );
         adjacentCitations.push(resolvedNum);
       }
-      prevCitationEndIndex = (match?.index ?? 0) + match[0].length;
+      prevCitationEndIndex = (match.index ?? 0) + match[0].length;
     }
   });
   elements.push(
