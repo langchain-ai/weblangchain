@@ -110,8 +110,10 @@ export function ChatWindow(props: {
               conversation_id: conversationId,
             },
           },
+          diff: true,
           include_names: [sourceStepName],
         }),
+        openWhenHidden: true,
         onerror(e) {
           throw e;
         },
