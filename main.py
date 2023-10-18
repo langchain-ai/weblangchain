@@ -176,7 +176,7 @@ def get_retriever():
     )
     base_kay_retriever = KayAiRetriever.create(
         dataset_id="company",
-        data_types=["10-K", "10-Q", "PressRelease"],
+        data_types=["10-K", "10-Q"],
         num_contexts=3,
     )
     kay_retriever = ContextualCompressionRetriever(
