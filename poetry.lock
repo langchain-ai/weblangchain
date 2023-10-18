@@ -937,6 +937,20 @@ files = [
 ]
 
 [[package]]
+name = "kay"
+version = "0.1.2"
+description = "Data API for Context Retrieval"
+category = "main"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "kay-0.1.2-py3-none-any.whl", hash = "sha256:911cf8e7734b54f8e5aadd29b24c971e3ccd8f4ae433d932dc5b306af6981c03"},
+]
+
+[package.dependencies]
+requests = ">=2"
+
+[[package]]
 name = "langchain"
 version = "0.0.316"
 description = "Building applications with LLMs through composability"
@@ -2051,4 +2065,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3e5685595e2c0439e71d1c4ec56d7da7e5e14b1c73ea7716e4f43ae39d680ac3"
+content-hash = "7ae37a73d4015917feb25a3d8007634fa95ffaf9c052ae0a5339b4c14db96bb3"

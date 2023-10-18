@@ -18,6 +18,7 @@ from langchain.retrievers import (ContextualCompressionRetriever,
                                   TavilySearchAPIRetriever)
 from langchain.retrievers.document_compressors import (
     DocumentCompressorPipeline, EmbeddingsFilter)
+from langchain.retrievers.kay import KayAiRetriever
 from langchain.retrievers.you import YouRetriever
 from langchain.schema import Document
 from langchain.schema.document import Document
@@ -173,6 +174,14 @@ def get_retriever():
     you_retriever = ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_you_retriever
     )
+    base_kay_retriever = KayAiRetriever.create(
+        dataset_id="company",
+        data_types=["10-K", "10-Q", "PressRelease"],
+        num_contexts=3,
+    )
+    kay_retriever = ContextualCompressionRetriever(
+        base_compressor=pipeline_compressor, base_retriever=base_kay_retriever
+    )
     return tavily_retriever.configurable_alternatives(
         # This gives this field an id
         # When configuring the end runnable, we can then use this id to configure this field
@@ -180,6 +189,7 @@ def get_retriever():
         default_key="tavily",
         google=google_retriever,
         you=you_retriever,
+        kay=kay_retriever,
     ).with_config(run_name="FinalSourceRetriever")
 
 

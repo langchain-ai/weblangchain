@@ -5,6 +5,7 @@ export type Source = {
   url: string;
   title: string;
   images: string[];
+  defaultSourceUrl?: string;
 };
 
 export function SourceBubble(props: {
@@ -14,26 +15,13 @@ export function SourceBubble(props: {
   onMouseEnter: () => any;
   onMouseLeave: () => any;
 }) {
-  const cumulativeOffset = function (element: HTMLElement | null) {
-    var top = 0,
-      left = 0;
-    do {
-      top += element?.offsetTop || 0;
-      left += element?.offsetLeft || 0;
-      element = (element?.offsetParent as HTMLElement) || null;
-    } while (element);
-
-    return {
-      top: top,
-      left: left,
-    };
-  };
-
-  const hostname = new URL(props.source.url).hostname.replace("www.", "");
+  const hostname = new URL(
+    props.source.url ?? props.source.defaultSourceUrl,
+  ).hostname.replace("www.", "");
 
   return (
     <a
-      href={props.source.url}
+      href={props.source.url ?? props.source.defaultSourceUrl}
       target="_blank"
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}

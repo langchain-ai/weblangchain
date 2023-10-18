@@ -24,6 +24,9 @@ import {
 } from "@chakra-ui/react";
 import { ArrowUpIcon } from "@chakra-ui/icons";
 import { Source } from "./SourceBubble";
+import { DefaultQuestion } from "./DefaultQuestion";
+
+type RetrieverName = "tavily" | "kay" | "you" | "google";
 
 export function ChatWindow(props: {
   apiBaseUrl: string;
@@ -35,7 +38,7 @@ export function ChatWindow(props: {
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [retriever, setRetriever] = useState("tavily");
+  const [retriever, setRetriever] = useState<RetrieverName>("tavily");
   const [llm, setLlm] = useState("openai");
 
   const [chatHistory, setChatHistory] = useState<
@@ -141,7 +144,8 @@ export function ChatWindow(props: {
               sources = streamedResponse.logs[
                 sourceStepName
               ].final_output.documents.map((doc: Record<string, any>) => ({
-                url: doc.metadata.source,
+                url: doc.metadata.source ?? doc.metadata.data_source_link,
+                defaultSourceUrl: retriever === "you" ? "https://you.com" : "",
                 title: doc.metadata.title,
                 images: doc.metadata.images,
               }));
@@ -183,6 +187,30 @@ export function ChatWindow(props: {
     }
   };
 
+  const defaultQuestions = [
+    "what is langchain?",
+    "history of mesopotamia",
+    "how to build a discord bot",
+    "leonardo dicaprio girlfriend",
+    "fun gift ideas for software engineers",
+    "how does a prism separate light",
+    "what bear is best",
+  ];
+
+  const DEFAULT_QUESTIONS: Record<RetrieverName, string[]> = {
+    tavily: defaultQuestions,
+    you: defaultQuestions,
+    google: defaultQuestions,
+    kay: [
+      "Is Johnson & Johnson increasing its marketing budget?",
+      "How is Lululemon adapting to new customer trends?",
+      "Which industries are growing in recent 10-Q reports?",
+      "Who are Etsy’s competitors?",
+      "Which companies reported data breaches?",
+      "What were the biggest strategy changes made by Roku in 2023?",
+    ],
+  };
+
   const sendInitialQuestion = async (question: string) => {
     await sendMessage(question);
   };
@@ -216,9 +244,12 @@ export function ChatWindow(props: {
         </Heading>
         <div className="text-white flex items-center mt-4">
           <span className="shrink-0 mr-2">Powered by</span>
-          <Select onChange={(e) => setRetriever(e.target.value)}>
+          <Select
+            onChange={(e) => setRetriever(e.target.value as RetrieverName)}
+          >
             <option value="tavily">Tavily</option>
-            {/* <option value="you">You.com</option> */}
+            <option value="kay">Kay.ai SEC Filings</option>
+            <option value="you">You.com</option>
             <option value="google">Google</option>
           </Select>
           <span className="shrink-0 ml-2 mr-2">and</span>
@@ -285,64 +316,34 @@ export function ChatWindow(props: {
       {messages.length === 0 ? (
         <div className="w-full text-center flex flex-col">
           <div className="flex grow justify-center w-full mt-4">
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              what is langchain?
-            </div>
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              history of mesopotamia
-            </div>
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              how to build a discord bot
-            </div>
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              leonardo dicaprio girlfriend
-            </div>
+            {DEFAULT_QUESTIONS[retriever]
+              .slice(0, 4)
+              .map((defaultQuestion, i) => {
+                return (
+                  <DefaultQuestion
+                    key={`defaultquestion:${i}`}
+                    question={defaultQuestion}
+                    onMouseUp={(e) =>
+                      sendInitialQuestion(
+                        (e.target as HTMLDivElement).innerText,
+                      )
+                    }
+                  ></DefaultQuestion>
+                );
+              })}
           </div>
           <div className="flex grow justify-center w-full mt-4">
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              fun gift ideas for software engineers
-            </div>
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              how does a prism separate light
-            </div>
-            <div
-              onMouseUp={(e) =>
-                sendInitialQuestion((e.target as HTMLDivElement).innerText)
-              }
-              className="bg-stone-700 px-2 py-1 mx-2 rounded cursor-pointer justify-center text-stone-200 hover:bg-stone-500"
-            >
-              what bear is best
-            </div>
+            {DEFAULT_QUESTIONS[retriever].slice(4).map((defaultQuestion, i) => {
+              return (
+                <DefaultQuestion
+                  key={`defaultquestion:${i + 4}`}
+                  question={defaultQuestion}
+                  onMouseUp={(e) =>
+                    sendInitialQuestion((e.target as HTMLDivElement).innerText)
+                  }
+                ></DefaultQuestion>
+              );
+            })}
           </div>
         </div>
       ) : (

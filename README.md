@@ -16,9 +16,15 @@ The code includes a simple backup that uses the Google Custom Search Engine for 
 export OPENAI_API_KEY=
 export TAVILY_API_KEY=
 
-# if you'd like to use the backup retriever
+# if you'd like to use the You.com retriever
+export YDC_API_KEY=
+
+# if you'd like to use the Google retriever
 export GOOGLE_CSE_ID=
 export GOOGLE_API_KEY=
+
+# if you'd like to use the Kay.ai retriever
+export KAY_API_KEY=
 
 # for tracing
 export LANGCHAIN_TRACING_V2=true
