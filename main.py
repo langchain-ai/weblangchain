@@ -32,6 +32,9 @@ from langchain.schema.runnable import (ConfigurableField, Runnable,
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 # Backup
 from langchain.utilities import GoogleSearchAPIWrapper
+
+from langchain.pydantic_v1 import BaseModel
+
 from langserve import add_routes
 from langsmith import Client
 from typing_extensions import TypedDict
@@ -94,7 +97,7 @@ app.add_middleware(
 )
 
 
-class ChatRequest(TypedDict):
+class ChatRequest(BaseModel):
     question: str
     chat_history: Optional[List[Dict[str, str]]]
 
