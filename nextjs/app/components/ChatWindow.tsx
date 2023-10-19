@@ -371,7 +371,7 @@ export function ChatWindow(props: {
             <span>View Source</span>
           </a>
           <a
-            href="https://weblangchain.fly.dev/chat/playground"
+            href={`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"}/chat/playground`}
             target="_blank"
             className="text-white flex items-center ml-8"
           >
