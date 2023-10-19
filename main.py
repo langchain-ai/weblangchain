@@ -33,8 +33,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 # Backup
 from langchain.utilities import GoogleSearchAPIWrapper
 
-from langchain.pydantic_v1 import BaseModel
-
 from langserve import add_routes
 from langsmith import Client
 from typing_extensions import TypedDict
@@ -97,7 +95,7 @@ app.add_middleware(
 )
 
 
-class ChatRequest(BaseModel):
+class ChatRequest(TypedDict):
     question: str
     chat_history: Optional[List[Dict[str, str]]]
 
@@ -180,10 +178,18 @@ def get_retriever():
     base_kay_retriever = KayAiRetriever.create(
         dataset_id="company",
         data_types=["10-K", "10-Q"],
-        num_contexts=3,
+        num_contexts=6,
     )
     kay_retriever = ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_kay_retriever
+    )
+    base_kay_press_release_retriever = KayAiRetriever.create(
+        dataset_id="company",
+        data_types=["PressRelease"],
+        num_contexts=6,
+    )
+    kay_press_release_retriever = ContextualCompressionRetriever(
+        base_compressor=pipeline_compressor, base_retriever=base_kay_press_release_retriever
     )
     return tavily_retriever.configurable_alternatives(
         # This gives this field an id
@@ -193,6 +199,7 @@ def get_retriever():
         google=google_retriever,
         you=you_retriever,
         kay=kay_retriever,
+        kay_press_release=kay_press_release_retriever,
     ).with_config(run_name="FinalSourceRetriever")
 
 
