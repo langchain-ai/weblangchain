@@ -989,31 +989,25 @@ text-helpers = ["chardet (>=5.1.0,<6.0.0)"]
 
 [[package]]
 name = "langserve"
-version = "0.0.10"
+version = "0.0.11"
 description = ""
 category = "main"
 optional = false
-python-versions = "^3.8.1"
-files = []
-develop = false
+python-versions = ">=3.8.1,<4.0.0"
+files = [
+    {file = "langserve-0.0.11-py3-none-any.whl", hash = "sha256:878f8ce94db4abab7a3f5d2d6c5cd58f3a9f0b8c8223f6bc4e4ee8e57a56b3f1"},
+    {file = "langserve-0.0.11.tar.gz", hash = "sha256:2f8d493540154c5808c5e368f009a0f916951c267bd39ec34faabe9006bd791e"},
+]
 
 [package.dependencies]
-fastapi = {version = ">=0.90.1", optional = true}
 httpx = ">=0.23.0"
 langchain = ">=0.0.316"
-pydantic = "^1"
-sse-starlette = {version = "^1.3.0", optional = true}
+pydantic = ">=1,<2"
 
 [package.extras]
 all = ["fastapi (>=0.90.1)", "httpx-sse (>=0.3.1)", "sse-starlette (>=1.3.0,<2.0.0)"]
 client = ["httpx-sse (>=0.3.1)"]
 server = ["fastapi (>=0.90.1)", "sse-starlette (>=1.3.0,<2.0.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/langchain-ai/langserve"
-reference = "nc/playground"
-resolved_reference = "174f47f4f79f713811716fb4c2c4b708f5d871d5"
 
 [[package]]
 name = "langsmith"
@@ -2075,4 +2069,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "af8a37686fbbbb1738980223fc8fad4a2d46239f6b30f5fbf36754852c1a65b5"
+content-hash = "0c1dcd26778b8fd83a6f512030fcdcabd8d80caf6d6609c7a978e7591143aa40"
