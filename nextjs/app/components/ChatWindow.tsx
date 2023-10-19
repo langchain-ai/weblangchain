@@ -214,7 +214,7 @@ export function ChatWindow(props: {
       "What were the major technological advancements in the renewable energy sector in 2023?",
       "What happened to Intel's acquisition of Tower Semiconductor?",
       "What were the biggest strategy changes made by Roku in 2023?",
-    ]
+    ],
   };
 
   const sendInitialQuestion = async (question: string) => {

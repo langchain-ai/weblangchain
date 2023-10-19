@@ -32,7 +32,6 @@ from langchain.schema.runnable import (ConfigurableField, Runnable,
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 # Backup
 from langchain.utilities import GoogleSearchAPIWrapper
-
 from langserve import add_routes
 from langsmith import Client
 from typing_extensions import TypedDict
@@ -189,7 +188,8 @@ def get_retriever():
         num_contexts=6,
     )
     kay_press_release_retriever = ContextualCompressionRetriever(
-        base_compressor=pipeline_compressor, base_retriever=base_kay_press_release_retriever
+        base_compressor=pipeline_compressor,
+        base_retriever=base_kay_press_release_retriever,
     )
     return tavily_retriever.configurable_alternatives(
         # This gives this field an id

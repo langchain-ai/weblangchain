@@ -74,8 +74,8 @@ const createAnswerElements = (
     const resolvedNum = sourceIndexMap.get(sourceNum) ?? 10;
     // Allow for one space between adjacent citations
     if (
-      (prevCitationEndIndex !== match.index) &&
-      ((prevCitationEndIndex + 1) !== match.index)
+      prevCitationEndIndex !== match.index &&
+      prevCitationEndIndex + 1 !== match.index
     ) {
       adjacentCitations = [];
     }
