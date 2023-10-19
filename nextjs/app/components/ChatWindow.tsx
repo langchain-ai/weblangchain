@@ -41,9 +41,7 @@ export function ChatWindow(props: {
   const [retriever, setRetriever] = useState<RetrieverName>("tavily");
   const [llm, setLlm] = useState("openai");
 
-  const [chatHistory, setChatHistory] = useState<
-    { human: string; ai: string }[]
-  >([]);
+  const [chatHistory, setChatHistory] = useState<[string, string][]>([]);
 
   const { apiBaseUrl, titleText } = props;
 
@@ -124,7 +122,7 @@ export function ChatWindow(props: {
           if (msg.event === "end") {
             setChatHistory((prevChatHistory) => [
               ...prevChatHistory,
-              { human: messageValue, ai: accumulatedMessage },
+              [messageValue, accumulatedMessage],
             ]);
             setIsLoading(false);
             return;
@@ -190,10 +188,10 @@ export function ChatWindow(props: {
   const defaultQuestions = [
     "what is langchain?",
     "history of mesopotamia",
-    "how to build a discord bot",
+    "how does a prism separate light",
     "leonardo dicaprio girlfriend",
     "fun gift ideas for software engineers",
-    "how does a prism separate light",
+    "how do you build a discord bot",
     "what bear is best",
   ];
 
@@ -228,7 +226,7 @@ export function ChatWindow(props: {
         (messages.length === 0 ? " justify-center mb-32" : "")
       }
     >
-      <div className="flex flex-col items-center pb-8">
+      <div className="flex flex-col items-center pb-8 w-full">
         <Heading
           fontSize={messages.length > 0 ? "2xl" : "4xl"}
           fontWeight={"medium"}
@@ -248,22 +246,27 @@ export function ChatWindow(props: {
             ? "We appreciate feedback!"
             : "Ask me anything about anything!"}
         </Heading>
-        <div className="text-white flex items-center mt-4">
-          <span className="shrink-0 mr-2">Powered by</span>
-          <Select
-            onChange={(e) => setRetriever(e.target.value as RetrieverName)}
-          >
-            <option value="tavily">Tavily</option>
-            <option value="kay">Kay.ai SEC Filings</option>
-            <option value="kay_press_release">Kay.ai Press Releases</option>
-            <option value="you">You.com</option>
-            <option value="google">Google</option>
-          </Select>
-          <span className="shrink-0 ml-2 mr-2">and</span>
-          <Select onChange={(e) => setLlm(e.target.value)} minWidth={"212px"}>
-            <option value="openai">GPT-3.5-Turbo</option>
-            <option value="anthropic">Claude-2</option>
-          </Select>
+        <div className="text-white flex flex-wrap items-center mt-4">
+          <div className="flex items-center mb-2">
+            <span className="shrink-0 mr-2">Powered by</span>
+            <Select
+              onChange={(e) => setRetriever(e.target.value as RetrieverName)}
+              width={"212px"}
+            >
+              <option value="tavily">Tavily</option>
+              <option value="kay">Kay.ai SEC Filings</option>
+              <option value="kay_press_release">Kay.ai Press Releases</option>
+              <option value="you">You.com</option>
+              <option value="google">Google</option>
+            </Select>
+          </div>
+          <div className="flex items-center mb-2">
+            <span className="shrink-0 ml-2 mr-2">and</span>
+            <Select onChange={(e) => setLlm(e.target.value)} width={"212px"}>
+              <option value="openai">GPT-3.5-Turbo</option>
+              <option value="anthropic">Claude-2</option>
+            </Select>
+          </div>
         </div>
       </div>
       <div
@@ -322,7 +325,7 @@ export function ChatWindow(props: {
       </InputGroup>
       {messages.length === 0 ? (
         <div className="w-full text-center flex flex-col">
-          <div className="flex grow justify-center w-full mt-4">
+          <div className="flex grow justify-center w-full mt-4 flex-wrap">
             {DEFAULT_QUESTIONS[retriever]
               .slice(0, 4)
               .map((defaultQuestion, i) => {
@@ -339,7 +342,7 @@ export function ChatWindow(props: {
                 );
               })}
           </div>
-          <div className="flex grow justify-center w-full mt-4">
+          <div className="grow justify-center w-full mt-2 hidden md:flex">
             {DEFAULT_QUESTIONS[retriever].slice(4).map((defaultQuestion, i) => {
               return (
                 <DefaultQuestion
@@ -366,6 +369,13 @@ export function ChatWindow(props: {
           >
             <img src="/images/github-mark.svg" className="h-4 mr-1" />
             <span>View Source</span>
+          </a>
+          <a
+            href="https://weblangchain.fly.dev/chat/playground"
+            target="_blank"
+            className="text-white flex items-center ml-8"
+          >
+            <span>Open Playground</span>
           </a>
         </footer>
       ) : (
