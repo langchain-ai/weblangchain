@@ -26,7 +26,7 @@ import { ArrowUpIcon } from "@chakra-ui/icons";
 import { Source } from "./SourceBubble";
 import { DefaultQuestion } from "./DefaultQuestion";
 
-type RetrieverName = "tavily" | "kay" | "you" | "google";
+type RetrieverName = "tavily" | "kay" | "you" | "google" | "kay_press_release";
 
 export function ChatWindow(props: {
   apiBaseUrl: string;
@@ -209,6 +209,12 @@ export function ChatWindow(props: {
       "Which companies reported data breaches?",
       "What were the biggest strategy changes made by Roku in 2023?",
     ],
+    kay_press_release: [
+      "How is the healthcare industry adopting generative AI tools?",
+      "What were the major technological advancements in the renewable energy sector in 2023?",
+      "What happened to Intel's acquisition of Tower Semiconductor?",
+      "What were the biggest strategy changes made by Roku in 2023?",
+    ],
   };
 
   const sendInitialQuestion = async (question: string) => {
@@ -249,11 +255,12 @@ export function ChatWindow(props: {
           >
             <option value="tavily">Tavily</option>
             <option value="kay">Kay.ai SEC Filings</option>
+            <option value="kay_press_release">Kay.ai Press Releases</option>
             <option value="you">You.com</option>
             <option value="google">Google</option>
           </Select>
           <span className="shrink-0 ml-2 mr-2">and</span>
-          <Select onChange={(e) => setLlm(e.target.value)} minWidth={"186px"}>
+          <Select onChange={(e) => setLlm(e.target.value)} minWidth={"212px"}>
             <option value="openai">GPT-3.5-Turbo</option>
             <option value="anthropic">Claude-2</option>
           </Select>

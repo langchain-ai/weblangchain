@@ -72,7 +72,11 @@ const createAnswerElements = (
   matches.forEach((match) => {
     const sourceNum = parseInt(match[1], 10);
     const resolvedNum = sourceIndexMap.get(sourceNum) ?? 10;
-    if (prevCitationEndIndex + 1 !== match.index) {
+    // Allow for one space between adjacent citations
+    if (
+      prevCitationEndIndex !== match.index &&
+      prevCitationEndIndex + 1 !== match.index
+    ) {
       adjacentCitations = [];
     }
     if (match.index !== null && resolvedNum < filteredSources.length) {
