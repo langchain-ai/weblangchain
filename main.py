@@ -2,7 +2,7 @@
 import asyncio
 import os
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence
+from typing import List, Sequence, Tuple, Union
 
 import langsmith
 from fastapi import FastAPI, Request
@@ -94,9 +94,9 @@ app.add_middleware(
 )
 
 
-class ChatRequest(TypedDict):
+class ChatRequest(TypedDict, total=False):
     question: str
-    chat_history: Optional[List[Dict[str, str]]]
+    chat_history: Union[List[Tuple[str, str]], None]
 
 
 class GoogleCustomSearchRetriever(BaseRetriever):
@@ -230,13 +230,13 @@ def create_retriever_chain(
 
 
 def serialize_history(request: ChatRequest):
-    chat_history = request["chat_history"] or []
+    chat_history = request.get("chat_history", [])
     converted_chat_history = []
     for message in chat_history:
-        if message.get("human") is not None:
-            converted_chat_history.append(HumanMessage(content=message["human"]))
-        if message.get("ai") is not None:
-            converted_chat_history.append(AIMessage(content=message["ai"]))
+        if message[0] is not None:
+            converted_chat_history.append(HumanMessage(content=message[0]))
+        if message[1] is not None:
+            converted_chat_history.append(AIMessage(content=message[1]))
     return converted_chat_history
 
 
