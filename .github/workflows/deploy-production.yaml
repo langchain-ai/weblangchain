@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Write Google Vertex credentials file
-        run: echo "${{ secrets.GOOGLE_VERTEX_AI_CREDENTIALS }}" > .google_vertex_ai_credentials.json
+        run: echo "${{ secrets.GOOGLE_VERTEX_AI_CREDENTIALS }}" > ./.google_vertex_ai_credentials.json
       - run: flyctl deploy --wait-timeout 600
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

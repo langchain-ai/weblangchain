@@ -8,7 +8,7 @@ COPY ./pyproject.toml ./poetry.lock* ./
 
 RUN poetry install --no-interaction --no-ansi --no-root --no-directory
 
-COPY ./*.py ./
+COPY ./*.py ./.google_vertex_ai_credentials.jso[n] ./
 
 RUN poetry install  --no-interaction --no-ansi
 
