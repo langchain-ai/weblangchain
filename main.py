@@ -291,6 +291,10 @@ def create_chain(
     )
 
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dir_path + "/" + ".google_vertex_ai_credentials.json"
+
 llm = ChatOpenAI(
     model="gpt-3.5-turbo-16k",
     # model="gpt-4",

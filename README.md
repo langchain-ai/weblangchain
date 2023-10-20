@@ -15,10 +15,9 @@ If you'd like to add or swap in different base retrievers (e.g. if you want to u
 export OPENAI_API_KEY=
 export TAVILY_API_KEY=
 
-# for Anthropic and Vertex models
+# for Anthropic
 # remove models from code if unused
 ANTHROPIC_API_KEY=
-GOOGLE_APPLICATION_CREDENTIALS=
 
 # if you'd like to use the You.com retriever
 export YDC_API_KEY=
@@ -36,6 +35,10 @@ export LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 export LANGCHAIN_API_KEY=
 export LANGCHAIN_PROJECT=
 ```
+
+You will also need to put your Google Cloud credentials in a JSON file under `.google_vertex_ai_credentials.json` in the main directory if you would like to
+use Google Vertex as an option. If you're not using Vertex, you'll need to remove `ChatVertexAI` from `main.py`.
+
 3. Start the Python backend with `poetry run make start`.
 4. Install frontend dependencies by running `cd nextjs`, then `yarn`.
 5. Run the frontend with `yarn dev` for frontend.
