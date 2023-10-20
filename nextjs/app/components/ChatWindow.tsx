@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { v4 as uuidv4 } from "uuid";
 import { ChatMessageBubble, Message } from "./ChatMessageBubble";
@@ -33,13 +34,17 @@ export function ChatWindow(props: {
   placeholder?: string;
   titleText?: string;
 }) {
+  const searchParams = useSearchParams();
+
   const conversationId = uuidv4();
   const messageContainerRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [retriever, setRetriever] = useState<RetrieverName>("tavily");
-  const [llm, setLlm] = useState("openai");
+  const [retriever, setRetriever] = useState<RetrieverName>(
+    (searchParams.get("retriever") as RetrieverName) ?? "tavily",
+  );
+  const [llm, setLlm] = useState(searchParams.get("llm") ?? "openai");
 
   const [chatHistory, setChatHistory] = useState<[string, string][]>([]);
 
@@ -219,6 +224,21 @@ export function ChatWindow(props: {
     await sendMessage(question);
   };
 
+  const insertUrlParam = (key: string, value?: string) => {
+    if (window.history.pushState) {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set(key, value ?? "");
+      const newurl =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname +
+        "?" +
+        searchParams.toString();
+      window.history.pushState({ path: newurl }, "", newurl);
+    }
+  };
+
   return (
     <div
       className={
@@ -250,7 +270,11 @@ export function ChatWindow(props: {
           <div className="flex items-center mb-2">
             <span className="shrink-0 mr-2">Powered by</span>
             <Select
-              onChange={(e) => setRetriever(e.target.value as RetrieverName)}
+              value={retriever}
+              onChange={(e) => {
+                insertUrlParam("retriever", e.target.value);
+                setRetriever(e.target.value as RetrieverName);
+              }}
               width={"212px"}
             >
               <option value="tavily">Tavily</option>
@@ -262,9 +286,17 @@ export function ChatWindow(props: {
           </div>
           <div className="flex items-center mb-2">
             <span className="shrink-0 ml-2 mr-2">and</span>
-            <Select onChange={(e) => setLlm(e.target.value)} width={"212px"}>
+            <Select
+              value={llm}
+              onChange={(e) => {
+                insertUrlParam("llm", e.target.value);
+                setLlm(e.target.value);
+              }}
+              width={"212px"}
+            >
               <option value="openai">GPT-3.5-Turbo</option>
               <option value="anthropic">Claude-2</option>
+              <option value="googlevertex">Google Vertex AI</option>
             </Select>
           </div>
         </div>

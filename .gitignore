@@ -143,3 +143,5 @@ bin/
 pyvenv.cfg
 node_modules/
 .envrc
+
+.google_vertex_ai_credentials.json

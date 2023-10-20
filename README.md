@@ -15,6 +15,11 @@ If you'd like to add or swap in different base retrievers (e.g. if you want to u
 export OPENAI_API_KEY=
 export TAVILY_API_KEY=
 
+# for Anthropic and Vertex models
+# remove models from code if unused
+ANTHROPIC_API_KEY=
+GOOGLE_APPLICATION_CREDENTIALS=
+
 # if you'd like to use the You.com retriever
 export YDC_API_KEY=
 
