@@ -25,6 +25,7 @@ import {
 import { ArrowUpIcon } from "@chakra-ui/icons";
 import { Source } from "./SourceBubble";
 import { DefaultQuestion } from "./DefaultQuestion";
+import { LangServePlayground } from "langserve-playground";
 
 type RetrieverName = "tavily" | "kay" | "you" | "google" | "kay_press_release";
 
@@ -38,14 +39,13 @@ export function ChatWindow(props: {
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [retriever, setRetriever] = useState<RetrieverName>("tavily");
-  const [llm, setLlm] = useState("openai");
 
   const [chatHistory, setChatHistory] = useState<
     { human: string; ai: string }[]
   >([]);
 
   const { apiBaseUrl, titleText } = props;
+  const [config, setConfig] = useState<Record<string, any>>({});
 
   const sendMessage = async (message?: string) => {
     if (messageContainerRef.current) {
@@ -84,7 +84,7 @@ export function ChatWindow(props: {
         : "plaintext";
       const highlightedCode = hljs.highlight(
         validLanguage || "plaintext",
-        code,
+        code
       ).value;
       return `<pre class="highlight bg-gray-700" style="padding: 5px; border-radius: 5px; overflow: auto; overflow-wrap: anywhere; white-space: pre-wrap; max-width: 100%; display: block; line-height: 1.2"><code class="${language}" style="color: #d6e2ef; font-size: 12px; ">${highlightedCode}</code></pre>`;
     };
@@ -105,10 +105,7 @@ export function ChatWindow(props: {
             chat_history: chatHistory,
           },
           config: {
-            configurable: {
-              retriever,
-              llm,
-            },
+            ...config,
             metadata: {
               conversation_id: conversationId,
             },
@@ -133,19 +130,22 @@ export function ChatWindow(props: {
             const chunk = JSON.parse(msg.data);
             streamedResponse = applyPatch(
               streamedResponse,
-              chunk.ops,
+              chunk.ops
             ).newDocument;
             if (
               Array.isArray(
                 streamedResponse?.logs?.[sourceStepName]?.final_output
-                  ?.documents,
+                  ?.documents
               )
             ) {
               sources = streamedResponse.logs[
                 sourceStepName
               ].final_output.documents.map((doc: Record<string, any>) => ({
                 url: doc.metadata.source ?? doc.metadata.data_source_link,
-                defaultSourceUrl: retriever === "you" ? "https://you.com" : "",
+                defaultSourceUrl:
+                  config?.configurable?.retriever === "you"
+                    ? "https://you.com"
+                    : "",
                 title: doc.metadata.title,
                 images: doc.metadata.images,
               }));
@@ -248,23 +248,6 @@ export function ChatWindow(props: {
             ? "We appreciate feedback!"
             : "Ask me anything about anything!"}
         </Heading>
-        <div className="text-white flex items-center mt-4">
-          <span className="shrink-0 mr-2">Powered by</span>
-          <Select
-            onChange={(e) => setRetriever(e.target.value as RetrieverName)}
-          >
-            <option value="tavily">Tavily</option>
-            <option value="kay">Kay.ai SEC Filings</option>
-            <option value="kay_press_release">Kay.ai Press Releases</option>
-            <option value="you">You.com</option>
-            <option value="google">Google</option>
-          </Select>
-          <span className="shrink-0 ml-2 mr-2">and</span>
-          <Select onChange={(e) => setLlm(e.target.value)} minWidth={"212px"}>
-            <option value="openai">GPT-3.5-Turbo</option>
-            <option value="anthropic">Claude-2</option>
-          </Select>
-        </div>
       </div>
       <div
         className="flex flex-col-reverse w-full mb-2 overflow-auto"
@@ -323,7 +306,9 @@ export function ChatWindow(props: {
       {messages.length === 0 ? (
         <div className="w-full text-center flex flex-col">
           <div className="flex grow justify-center w-full mt-4">
-            {DEFAULT_QUESTIONS[retriever]
+            {DEFAULT_QUESTIONS[
+              (config?.configurable?.retriever ?? "tavily") as RetrieverName
+            ]
               .slice(0, 4)
               .map((defaultQuestion, i) => {
                 return (
@@ -332,7 +317,7 @@ export function ChatWindow(props: {
                     question={defaultQuestion}
                     onMouseUp={(e) =>
                       sendInitialQuestion(
-                        (e.target as HTMLDivElement).innerText,
+                        (e.target as HTMLDivElement).innerText
                       )
                     }
                   ></DefaultQuestion>
@@ -340,22 +325,34 @@ export function ChatWindow(props: {
               })}
           </div>
           <div className="flex grow justify-center w-full mt-4">
-            {DEFAULT_QUESTIONS[retriever].slice(4).map((defaultQuestion, i) => {
-              return (
-                <DefaultQuestion
-                  key={`defaultquestion:${i + 4}`}
-                  question={defaultQuestion}
-                  onMouseUp={(e) =>
-                    sendInitialQuestion((e.target as HTMLDivElement).innerText)
-                  }
-                ></DefaultQuestion>
-              );
-            })}
+            {DEFAULT_QUESTIONS[
+              (config?.configurable?.retriever ?? "tavily") as RetrieverName
+            ]
+              .slice(4)
+              .map((defaultQuestion, i) => {
+                return (
+                  <DefaultQuestion
+                    key={`defaultquestion:${i + 4}`}
+                    question={defaultQuestion}
+                    onMouseUp={(e) =>
+                      sendInitialQuestion(
+                        (e.target as HTMLDivElement).innerText
+                      )
+                    }
+                  ></DefaultQuestion>
+                );
+              })}
           </div>
         </div>
       ) : (
         ""
       )}
+
+      <LangServePlayground
+        baseUrl={`${apiBaseUrl}/chat`}
+        value={config}
+        onChange={(config) => setConfig(config)}
+      />
 
       {messages.length === 0 ? (
         <footer className="flex justify-center absolute bottom-8">
