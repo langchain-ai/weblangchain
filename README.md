@@ -7,8 +7,7 @@ This repo is an example of performing retrieval using the entire internet as a d
 ## ✅ Running locally
 
 By default, WebLangChain uses [Tavily](https://tavily.com) to fetch content from webpages. You can get an API key from [by signing up](https://tavily.com/).
-If you'd like to swap in a different base retriever (e.g. if you want to use your own data source), you can modify the `get_base_retriever()` method in `main.py`.
-The code includes a simple backup that uses the Google Custom Search Engine for reference.
+If you'd like to add or swap in different base retrievers (e.g. if you want to use your own data source), you can update the `get_retriever()` method in `main.py`.
 
 1. Install backend dependencies: `poetry install`.
 2. Make sure to set your environment variables to configure the application:
@@ -45,9 +44,13 @@ use Google Vertex as an option. If you're not using Vertex, you'll need to remov
 5. Run the frontend with `yarn dev` for frontend.
 6. Open [localhost:3000](http://localhost:3000) in your browser.
 
+Under the hood, the chain is converted to a FastAPI server with various endpoints via [LangServe](https://github.com/langchain-ai/langserve).
+This also includes a playground that you can use to interactively swap and configure various pieces of the chain.
+You can find it running at `http://localhost:8080/chat/playground`.
+
 ## ☕ Running locally (JS backend)
 
-Note that customization of the retriever and model via LangServe is currently not supported for the JS backend.
+Note that LangServe is not currently supported in JS, and customization of the retriever and model, as well as the playground, are unavailable.
 
 1. Install frontend dependencies by running `cd nextjs`, then `yarn`.
 2. Populate a `nextjs/.env.local` file with your own versions of keys from the `nextjs/.env.example` file, and set `NEXT_PUBLIC_API_BASE_URL` to `"http://localhost:3000/api"`.
