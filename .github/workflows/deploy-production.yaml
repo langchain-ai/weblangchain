@@ -13,8 +13,11 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Write Google Vertex credentials file
         run: echo "${{ secrets.GOOGLE_VERTEX_AI_CREDENTIALS }}" > ./.google_vertex_ai_credentials.json
+      - name: Show folder contents
+        run: ls -a
       - run: flyctl deploy --wait-timeout 600
         env:
+          GOOGLE_VERTEX_AI_CREDENTIALS: ${{ secrets.GOOGLE_VERTEX_AI_CREDENTIALS }}
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
   deploy-frontend:
     name: Deploy Frontend to Vercel
