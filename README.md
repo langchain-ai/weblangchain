@@ -16,6 +16,11 @@ The code includes a simple backup that uses the Google Custom Search Engine for 
 export OPENAI_API_KEY=
 export TAVILY_API_KEY=
 
+# for Anthropic and Vertex models
+# remove models from code if unused
+ANTHROPIC_API_KEY=
+GOOGLE_APPLICATION_CREDENTIALS=
+
 # if you'd like to use the You.com retriever
 export YDC_API_KEY=
 

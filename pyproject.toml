@@ -20,6 +20,7 @@ google-api-python-client = "^2.102.0"
 html2text = "^2020.1.16"
 anthropic = "^0.4.1"
 kay = "^0.1.2"
+google-cloud-aiplatform = "^1.35.0"
 
 
 [tool.poetry.group.dev.dependencies]

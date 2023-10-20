@@ -8,7 +8,7 @@ import langsmith
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
-from langchain.chat_models import ChatAnthropic, ChatOpenAI
+from langchain.chat_models import ChatAnthropic, ChatOpenAI, ChatVertexAI
 from langchain.document_loaders import AsyncHtmlLoader
 from langchain.document_transformers import Html2TextTransformer
 from langchain.embeddings import OpenAIEmbeddings
@@ -295,13 +295,19 @@ llm = ChatOpenAI(
     model="gpt-3.5-turbo-16k",
     # model="gpt-4",
     streaming=True,
-    temperature=0,
+    temperature=0.1,
 ).configurable_alternatives(
     # This gives this field an id
     # When configuring the end runnable, we can then use this id to configure this field
     ConfigurableField(id="llm"),
     default_key="openai",
-    anthropic=ChatAnthropic(model="claude-2", max_tokens=16384),
+    anthropic=ChatAnthropic(model="claude-2", max_tokens=16384, temperature=0.1),
+    googlevertex=ChatVertexAI(
+        model_name="chat-bison-32k",
+        temperature=0.1,
+        max_output_tokens=8192,
+        stream=True,
+    ),
 )
 
 
