@@ -127,7 +127,8 @@ export function ChatWindow(props: {
           if (msg.event === "end") {
             setChatHistory((prevChatHistory) => [
               ...prevChatHistory,
-              [messageValue, accumulatedMessage],
+              ["human", messageValue],
+              ["ai", accumulatedMessage],
             ]);
             setIsLoading(false);
             return;
@@ -403,7 +404,9 @@ export function ChatWindow(props: {
             <span>View Source</span>
           </a>
           <a
-            href={`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"}/chat/playground`}
+            href={`${
+              process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"
+            }/chat/playground`}
             target="_blank"
             className="text-white flex items-center ml-8"
           >
