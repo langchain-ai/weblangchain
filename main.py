@@ -2,7 +2,7 @@
 import asyncio
 import os
 from operator import itemgetter
-from typing import List, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple
 
 import langsmith
 from fastapi import FastAPI, Request
@@ -34,7 +34,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utilities import GoogleSearchAPIWrapper
 from langserve import add_routes
 from langsmith import Client
-from typing_extensions import TypedDict
+from pydantic import BaseModel, Field
 
 RESPONSE_TEMPLATE = """\
 You are an expert researcher and writer, tasked with answering any question.
@@ -94,13 +94,16 @@ app.add_middleware(
 )
 
 
-class ChatRequest(TypedDict, total=False):
+class ChatRequest(BaseModel):
     question: str
-    chat_history: Union[List[Tuple[str, str]], None]
+    chat_history: List[Tuple[str, str]] = Field(
+        ...,
+        extra={"widget": {"type": "chat", "input": "question", "output": "answer"}},
+    )
 
 
 class GoogleCustomSearchRetriever(BaseRetriever):
-    search: GoogleSearchAPIWrapper = GoogleSearchAPIWrapper()
+    search: Optional[GoogleSearchAPIWrapper] = None
     num_search_results = 6
 
     def clean_search_query(self, query: str) -> str:
@@ -128,6 +131,12 @@ class GoogleCustomSearchRetriever(BaseRetriever):
     def _get_relevant_documents(
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ):
+        if os.environ.get("GOOGLE_API_KEY", None) == None:
+            raise Exception("No Google API key provided")
+
+        if self.search == None:
+            self.search = GoogleSearchAPIWrapper()
+
         # Get search questions
         print("Generating questions for Google Search ...")
 
@@ -170,7 +179,9 @@ def get_retriever():
     google_retriever = ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_google_retriever
     )
-    base_you_retriever = YouRetriever()
+    base_you_retriever = YouRetriever(
+        ydc_api_key=os.environ.get("YDC_API_KEY", "not_provided")
+    )
     you_retriever = ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_you_retriever
     )
@@ -233,9 +244,9 @@ def serialize_history(request: ChatRequest):
     chat_history = request.get("chat_history", [])
     converted_chat_history = []
     for message in chat_history:
-        if message[0] is not None:
-            converted_chat_history.append(HumanMessage(content=message[0]))
-        if message[1] is not None:
+        if message[0] == "human":
+            converted_chat_history.append(HumanMessage(content=message[1]))
+        elif message[0] == "ai":
             converted_chat_history.append(AIMessage(content=message[1]))
     return converted_chat_history
 
@@ -293,7 +304,11 @@ def create_chain(
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dir_path + "/" + ".google_vertex_ai_credentials.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+    dir_path + "/" + ".google_vertex_ai_credentials.json"
+)
+
+has_google_creds = os.path.isfile(os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
 
 llm = ChatOpenAI(
     model="gpt-3.5-turbo-16k",
@@ -305,15 +320,38 @@ llm = ChatOpenAI(
     # When configuring the end runnable, we can then use this id to configure this field
     ConfigurableField(id="llm"),
     default_key="openai",
-    anthropic=ChatAnthropic(model="claude-2", max_tokens=16384, temperature=0.1),
-    googlevertex=ChatVertexAI(
-        model_name="chat-bison-32k",
+    anthropic=ChatAnthropic(
+        model="claude-2",
+        max_tokens=16384,
         temperature=0.1,
-        max_output_tokens=8192,
-        stream=True,
+        anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "not_provided"),
     ),
 )
 
+if has_google_creds:
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo-16k",
+        # model="gpt-4",
+        streaming=True,
+        temperature=0.1,
+    ).configurable_alternatives(
+        # This gives this field an id
+        # When configuring the end runnable, we can then use this id to configure this field
+        ConfigurableField(id="llm"),
+        default_key="openai",
+        anthropic=ChatAnthropic(
+            model="claude-2",
+            max_tokens=16384,
+            temperature=0.1,
+            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "not_provided"),
+        ),
+        googlevertex=ChatVertexAI(
+            model_name="chat-bison-32k",
+            temperature=0.1,
+            max_output_tokens=8192,
+            stream=True,
+        ),
+    )
 
 retriever = get_retriever()
 

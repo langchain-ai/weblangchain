@@ -144,10 +144,9 @@ const serializeHistory = (input: any) => {
   const chatHistory = input.chat_history || [];
   const convertedChatHistory = [];
   for (const message of chatHistory) {
-    if (message[0] !== undefined) {
-      convertedChatHistory.push(new HumanMessage({ content: message[0] }));
-    }
-    if (message[1] !== undefined) {
+    if (message[0] === "human") {
+      convertedChatHistory.push(new HumanMessage({ content: message[1] }));
+    } else if (message[0] === "ai") {
       convertedChatHistory.push(new AIMessage({ content: message[1] }));
     }
   }
