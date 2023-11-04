@@ -47,9 +47,6 @@ same number - if you want to cite \`number1\` multiple times for a sentence, onl
 You should use bullet points in your answer for readability. Put citations where they apply
 rather than putting them all at the end.
 
-If there is nothing in the context relevant to the question at hand, just say "Hmm,
-I'm not sure." Don't try to make up an answer.
-
 Anything between the following \`context\` html blocks is retrieved from a knowledge
 bank, not part of the conversation with the user.
 
@@ -57,8 +54,7 @@ bank, not part of the conversation with the user.
     {context}
 <context/>
 
-REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm
-not sure." Don't try to make up an answer. Anything between the preceding 'context'
+REMEMBER: Anything between the preceding 'context'
 html blocks is retrieved from a knowledge bank, not part of the conversation with the
 user.`;
 
