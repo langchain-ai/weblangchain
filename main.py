@@ -2,22 +2,25 @@
 import asyncio
 import os
 from operator import itemgetter
-from typing import List, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import langsmith
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.chat_models import ChatAnthropic, ChatOpenAI, ChatVertexAI
 from langchain.document_loaders import AsyncHtmlLoader
 from langchain.document_transformers import Html2TextTransformer
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.prompts import (ChatPromptTemplate, MessagesPlaceholder,
-                               PromptTemplate)
-from langchain.retrievers import (ContextualCompressionRetriever,
-                                  TavilySearchAPIRetriever)
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
+from langchain.retrievers import (
+    ContextualCompressionRetriever,
+    TavilySearchAPIRetriever,
+)
 from langchain.retrievers.document_compressors import (
-    DocumentCompressorPipeline, EmbeddingsFilter)
+    DocumentCompressorPipeline,
+    EmbeddingsFilter,
+)
 from langchain.retrievers.kay import KayAiRetriever
 from langchain.retrievers.you import YouRetriever
 from langchain.schema import Document
@@ -26,15 +29,21 @@ from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.retriever import BaseRetriever
-from langchain.schema.runnable import (ConfigurableField, Runnable,
-                                       RunnableBranch, RunnableLambda,
-                                       RunnableMap)
+from langchain.schema.runnable import (
+    ConfigurableField,
+    Runnable,
+    RunnableBranch,
+    RunnableLambda,
+    RunnableMap,
+)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 # Backup
 from langchain.utilities import GoogleSearchAPIWrapper
 from langserve import add_routes
 from langsmith import Client
-from typing_extensions import TypedDict
+from pydantic import BaseModel, Field
+from uuid import UUID
 
 RESPONSE_TEMPLATE = """\
 You are an expert researcher and writer, tasked with answering any question.
@@ -94,13 +103,16 @@ app.add_middleware(
 )
 
 
-class ChatRequest(TypedDict, total=False):
+class ChatRequest(BaseModel):
     question: str
-    chat_history: Union[List[Tuple[str, str]], None]
+    chat_history: List[Tuple[str, str]] = Field(
+        ...,
+        extra={"widget": {"type": "chat", "input": "question", "output": "answer"}},
+    )
 
 
 class GoogleCustomSearchRetriever(BaseRetriever):
-    search: GoogleSearchAPIWrapper = GoogleSearchAPIWrapper()
+    search: Optional[GoogleSearchAPIWrapper] = None
     num_search_results = 6
 
     def clean_search_query(self, query: str) -> str:
@@ -128,6 +140,12 @@ class GoogleCustomSearchRetriever(BaseRetriever):
     def _get_relevant_documents(
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ):
+        if os.environ.get("GOOGLE_API_KEY", None) == None:
+            raise Exception("No Google API key provided")
+
+        if self.search == None:
+            self.search = GoogleSearchAPIWrapper()
+
         # Get search questions
         print("Generating questions for Google Search ...")
 
@@ -170,7 +188,9 @@ def get_retriever():
     google_retriever = ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_google_retriever
     )
-    base_you_retriever = YouRetriever()
+    base_you_retriever = YouRetriever(
+        ydc_api_key=os.environ.get("YDC_API_KEY", "not_provided")
+    )
     you_retriever = ContextualCompressionRetriever(
         base_compressor=pipeline_compressor, base_retriever=base_you_retriever
     )
@@ -233,9 +253,9 @@ def serialize_history(request: ChatRequest):
     chat_history = request.get("chat_history", [])
     converted_chat_history = []
     for message in chat_history:
-        if message[0] is not None:
-            converted_chat_history.append(HumanMessage(content=message[0]))
-        if message[1] is not None:
+        if message[0] == "human":
+            converted_chat_history.append(HumanMessage(content=message[1]))
+        elif message[0] == "ai":
             converted_chat_history.append(AIMessage(content=message[1]))
     return converted_chat_history
 
@@ -293,7 +313,11 @@ def create_chain(
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dir_path + "/" + ".google_vertex_ai_credentials.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+    dir_path + "/" + ".google_vertex_ai_credentials.json"
+)
+
+has_google_creds = os.path.isfile(os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
 
 llm = ChatOpenAI(
     model="gpt-3.5-turbo-16k",
@@ -305,15 +329,38 @@ llm = ChatOpenAI(
     # When configuring the end runnable, we can then use this id to configure this field
     ConfigurableField(id="llm"),
     default_key="openai",
-    anthropic=ChatAnthropic(model="claude-2", max_tokens=16384, temperature=0.1),
-    googlevertex=ChatVertexAI(
-        model_name="chat-bison-32k",
+    anthropic=ChatAnthropic(
+        model="claude-2",
+        max_tokens=16384,
         temperature=0.1,
-        max_output_tokens=8192,
-        stream=True,
+        anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "not_provided"),
     ),
 )
 
+if has_google_creds:
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo-16k",
+        # model="gpt-4",
+        streaming=True,
+        temperature=0.1,
+    ).configurable_alternatives(
+        # This gives this field an id
+        # When configuring the end runnable, we can then use this id to configure this field
+        ConfigurableField(id="llm"),
+        default_key="openai",
+        anthropic=ChatAnthropic(
+            model="claude-2",
+            max_tokens=16384,
+            temperature=0.1,
+            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "not_provided"),
+        ),
+        googlevertex=ChatVertexAI(
+            model_name="chat-bison-32k",
+            temperature=0.1,
+            max_output_tokens=8192,
+            stream=True,
+        ),
+    )
 
 retriever = get_retriever()
 
@@ -324,25 +371,36 @@ add_routes(
 )
 
 
+class SendFeedbackBody(BaseModel):
+    run_id: UUID
+    key: str = "user_score"
+
+    score: Union[float, int, bool, None] = None
+    feedback_id: Optional[UUID] = None
+    comment: Optional[str] = None
+
+
 @app.post("/feedback")
-async def send_feedback(request: Request):
-    data = await request.json()
-    run_id = data.get("run_id")
-    if run_id is None:
-        return {
-            "result": "No LangSmith run ID provided",
-            "code": 400,
-        }
-    key = data.get("key", "user_score")
-    vals = {**data, "key": key}
-    client.create_feedback(**vals)
+async def send_feedback(body: SendFeedbackBody):
+    client.create_feedback(
+        body.run_id,
+        body.key,
+        score=body.score,
+        comment=body.comment,
+        feedback_id=body.feedback_id,
+    )
     return {"result": "posted feedback successfully", "code": 200}
 
 
+class UpdateFeedbackBody(BaseModel):
+    feedback_id: UUID
+    score: Union[float, int, bool, None] = None
+    comment: Optional[str] = None
+
+
 @app.patch("/feedback")
-async def update_feedback(request: Request):
-    data = await request.json()
-    feedback_id = data.get("feedback_id")
+async def update_feedback(body: UpdateFeedbackBody):
+    feedback_id = body.feedback_id
     if feedback_id is None:
         return {
             "result": "No feedback ID provided",
@@ -350,8 +408,8 @@ async def update_feedback(request: Request):
         }
     client.update_feedback(
         feedback_id,
-        score=data.get("score"),
-        comment=data.get("comment"),
+        score=body.score,
+        comment=body.comment,
     )
     return {"result": "patched feedback successfully", "code": 200}
 
@@ -374,16 +432,19 @@ async def aget_trace_url(run_id: str) -> str:
     return await _arun(client.share_run, run_id)
 
 
+class GetTraceBody(BaseModel):
+    run_id: UUID
+
+
 @app.post("/get_trace")
-async def get_trace(request: Request):
-    data = await request.json()
-    run_id = data.get("run_id")
+async def get_trace(body: GetTraceBody):
+    run_id = body.run_id
     if run_id is None:
         return {
             "result": "No LangSmith run ID provided",
             "code": 400,
         }
-    return await aget_trace_url(run_id)
+    return await aget_trace_url(str(run_id))
 
 
 if __name__ == "__main__":
