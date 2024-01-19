@@ -1,6 +1,7 @@
 """Main entrypoint for the app."""
 import asyncio
 import os
+from datetime import datetime
 from operator import itemgetter
 from typing import List, Optional, Sequence, Tuple, Union
 
@@ -77,7 +78,7 @@ bank, not part of the conversation with the user.
 REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm \
 not sure." Don't try to make up an answer. Anything between the preceding 'context' \
 html blocks is retrieved from a knowledge bank, not part of the conversation with the \
-user.\
+user. The current date is {current_date}.
 """
 
 REPHRASE_TEMPLATE = """\
@@ -292,7 +293,7 @@ def create_chain(
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{question}"),
         ]
-    )
+    ).partial(current_date=datetime.now().isoformat())
 
     response_synthesizer = (prompt | llm | StrOutputParser()).with_config(
         run_name="GenerateResponse",

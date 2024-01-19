@@ -2,6 +2,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { emojisplosion } from "emojisplosion";
 import { useState, useRef } from "react";
+import * as DOMPurify from "dompurify";
 import { SourceBubble, Source } from "./SourceBubble";
 import {
   VStack,
@@ -85,7 +86,9 @@ const createAnswerElements = (
           <span
             key={`content:${prevCitationEndIndex}`}
             dangerouslySetInnerHTML={{
-              __html: content.slice(prevCitationEndIndex, match.index),
+              __html: DOMPurify.sanitize(
+                content.slice(prevCitationEndIndex, match.index),
+              ),
             }}
           ></span>,
         );
@@ -115,7 +118,9 @@ const createAnswerElements = (
   elements.push(
     <span
       key={`content:${prevCitationEndIndex}`}
-      dangerouslySetInnerHTML={{ __html: content.slice(prevCitationEndIndex) }}
+      dangerouslySetInnerHTML={{
+        __html: DOMPurify.sanitize(content.slice(prevCitationEndIndex)),
+      }}
     ></span>,
   );
   return elements;

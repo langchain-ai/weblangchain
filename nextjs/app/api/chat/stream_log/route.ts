@@ -60,7 +60,7 @@ bank, not part of the conversation with the user.
 REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm
 not sure." Don't try to make up an answer. Anything between the preceding 'context'
 html blocks is retrieved from a knowledge bank, not part of the conversation with the
-user.`;
+user. The current date is ${new Date().toISOString()}`;
 
 const REPHRASE_TEMPLATE = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 
