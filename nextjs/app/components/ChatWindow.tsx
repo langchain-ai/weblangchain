@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { v4 as uuidv4 } from "uuid";
+import { RemoteRunnable } from "langchain/runnables/remote";
+import { applyPatch } from "@langchain/core/utils/json_patch";
+
 import { ChatMessageBubble, Message } from "./ChatMessageBubble";
 import { marked } from "marked";
 import { Renderer } from "marked";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { applyPatch } from "fast-json-patch";
 import hljs from "highlight.js";
 import "highlight.js/styles/gradient-dark.css";
 
@@ -96,93 +97,79 @@ export function ChatWindow(props: {
     try {
       const sourceStepName = "FinalSourceRetriever";
       let streamedResponse: Record<string, any> = {};
-      await fetchEventSource(apiBaseUrl + "/chat/stream_log", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-        },
-        body: JSON.stringify({
-          input: {
-            question: messageValue,
-            chat_history: chatHistory,
-          },
-          config: {
-            configurable: {
-              retriever,
-              llm,
-            },
-            metadata: {
-              conversation_id: conversationId,
-            },
-          },
-          diff: true,
-          include_names: [sourceStepName],
-        }),
-        openWhenHidden: true,
-        onerror(e) {
-          throw e;
-        },
-        onmessage(msg) {
-          if (msg.event === "end") {
-            setChatHistory((prevChatHistory) => [
-              ...prevChatHistory,
-              ["human", messageValue],
-              ["ai", accumulatedMessage],
-            ]);
-            setIsLoading(false);
-            return;
-          }
-          if (msg.event === "data" && msg.data) {
-            const chunk = JSON.parse(msg.data);
-            streamedResponse = applyPatch(
-              streamedResponse,
-              chunk.ops,
-            ).newDocument;
-            if (
-              Array.isArray(
-                streamedResponse?.logs?.[sourceStepName]?.final_output
-                  ?.documents,
-              )
-            ) {
-              sources = streamedResponse.logs[
-                sourceStepName
-              ].final_output.documents.map((doc: Record<string, any>) => ({
-                url: doc.metadata.source ?? doc.metadata.data_source_link,
-                defaultSourceUrl: retriever === "you" ? "https://you.com" : "",
-                title: doc.metadata.title,
-                images: doc.metadata.images,
-              }));
-            }
-            if (streamedResponse.id !== undefined) {
-              runId = streamedResponse.id;
-            }
-            if (Array.isArray(streamedResponse?.streamed_output)) {
-              accumulatedMessage = streamedResponse.streamed_output.join("");
-            }
-            const parsedResult = marked.parse(accumulatedMessage);
-
-            setMessages((prevMessages) => {
-              let newMessages = [...prevMessages];
-              if (messageIndex === null) {
-                messageIndex = newMessages.length;
-                newMessages.push({
-                  id: Math.random().toString(),
-                  content: parsedResult.trim(),
-                  runId: runId,
-                  sources: sources,
-                  role: "assistant",
-                });
-              } else {
-                newMessages[messageIndex].content = parsedResult.trim();
-                newMessages[messageIndex].runId = runId;
-                newMessages[messageIndex].sources = sources;
-              }
-              return newMessages;
-            });
-          }
+      const remoteChain = new RemoteRunnable({
+        url: apiBaseUrl + "/chat",
+        options: {
+          timeout: 60000,
         },
       });
+      const logStream = await remoteChain.streamLog(
+        {
+          question: messageValue,
+          chat_history: chatHistory,
+        },
+        {
+          configurable: {
+            retriever,
+            llm,
+          },
+          metadata: {
+            conversation_id: conversationId,
+          },
+        },
+        {
+          includeNames: [sourceStepName],
+        },
+      );
+      for await (const chunk of logStream) {
+        streamedResponse = applyPatch(streamedResponse, chunk.ops).newDocument;
+        if (
+          Array.isArray(
+            streamedResponse?.logs?.[sourceStepName]?.final_output?.documents,
+          )
+        ) {
+          sources = streamedResponse.logs[
+            sourceStepName
+          ].final_output.documents.map((doc: Record<string, any>) => ({
+            url: doc.metadata.source ?? doc.metadata.data_source_link,
+            defaultSourceUrl: retriever === "you" ? "https://you.com" : "",
+            title: doc.metadata.title,
+            images: doc.metadata.images,
+          }));
+        }
+        if (streamedResponse.id !== undefined) {
+          runId = streamedResponse.id;
+        }
+        if (Array.isArray(streamedResponse?.streamed_output)) {
+          accumulatedMessage = streamedResponse.streamed_output.join("");
+        }
+        const parsedResult = marked.parse(accumulatedMessage);
+
+        setMessages((prevMessages) => {
+          let newMessages = [...prevMessages];
+          if (messageIndex === null) {
+            messageIndex = newMessages.length;
+            newMessages.push({
+              id: Math.random().toString(),
+              content: parsedResult.trim(),
+              runId: runId,
+              sources: sources,
+              role: "assistant",
+            });
+          } else {
+            newMessages[messageIndex].content = parsedResult.trim();
+            newMessages[messageIndex].runId = runId;
+            newMessages[messageIndex].sources = sources;
+          }
+          return newMessages;
+        });
+      }
+      setChatHistory((prevChatHistory) => [
+        ...prevChatHistory,
+        ["human", messageValue],
+        ["ai", accumulatedMessage],
+      ]);
+      setIsLoading(false);
     } catch (e: any) {
       setMessages((prevMessages) => prevMessages.slice(0, -1));
       setIsLoading(false);
