@@ -2,8 +2,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-import type { BaseLanguageModel } from "langchain/base_language";
-import type { Document } from "langchain/document";
+import type { BaseLanguageModel } from "@langchain/core/language_models/base";
+import type { Document } from "@langchain/core/documents";
 
 import {
   RunnableSequence,
@@ -11,21 +11,20 @@ import {
   RunnableBranch,
   RunnableLambda,
   Runnable,
-} from "langchain/schema/runnable";
-import { HumanMessage, AIMessage, BaseMessage } from "langchain/schema";
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { StringOutputParser } from "langchain/schema/output_parser";
+} from "@langchain/core/runnables";
+import { HumanMessage, AIMessage, BaseMessage } from "@langchain/core/messages";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
   PromptTemplate,
   ChatPromptTemplate,
   MessagesPlaceholder,
-} from "langchain/prompts";
+} from "@langchain/core/prompts";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { TavilySearchAPIRetriever } from "langchain/retrievers/tavily_search_api";
+import { TavilySearchAPIRetriever } from "@langchain/community/retrievers/tavily_search_api";
 import { DocumentCompressorPipeline } from "langchain/retrievers/document_compressors";
 import { ContextualCompressionRetriever } from "langchain/retrievers/contextual_compression";
 import { EmbeddingsFilter } from "langchain/retrievers/document_compressors/embeddings_filter";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 
 export const runtime = "edge";
 
