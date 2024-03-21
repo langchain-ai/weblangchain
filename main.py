@@ -73,7 +73,7 @@ bank, not part of the conversation with the user.
 
 <context>
     {context}
-<context/>
+</context>
 
 REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm \
 not sure." Don't try to make up an answer. Anything between the preceding 'context' \
